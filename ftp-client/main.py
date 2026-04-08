@@ -13,15 +13,17 @@ class SimpleFTPClient:
             self.ftp.login(username, password)
             print(f"Connected to {self.host} as '{username}'")
             print(self.ftp.getwelcome())
+
         except ftplib.all_errors as e:
             print(f"Failed to connect: {e}")
 
-    def list_directory(self, path=''):
-        print(f"\nDirectory Listing for '{path or '.'}':")
+    def list_directory(self, path='.'):
+        print(f"\nDirectory Listing for {path}")
         try:
             if path:
                 self.ftp.cwd(path)
             self.ftp.retrlines('LIST')
+
         except ftplib.all_errors as e:
             print(f"Failed to list directory: {e}")
 
@@ -29,8 +31,10 @@ class SimpleFTPClient:
         print(f"Downloading '{remote_filename}'...")
         try:
             with open(local_filename, 'wb') as local_file:
+                self.ftp.retrbinary(f'RETR {remote_filename}', print)
                 self.ftp.retrbinary(f"RETR {remote_filename}", local_file.write)
             print(f"Successfully downloaded to: {local_filename}")
+
         except ftplib.all_errors as e:
             print(f"Failed to download file: {e}")
 
@@ -44,6 +48,7 @@ class SimpleFTPClient:
             with open(local_filename, 'rb') as local_file:
                 self.ftp.storbinary(f"STOR {remote_filename}", local_file)
             print(f"Successfully uploaded as: {remote_filename}")
+
         except ftplib.all_errors as e:
             print(f"Failed to upload file: {e}")
 
@@ -51,14 +56,16 @@ class SimpleFTPClient:
         try:
             self.ftp.quit()
             print("Disconnected safely.")
+
         except ftplib.all_errors:
             self.ftp.close()
             print("Connection forced closed.")
 
 if __name__ == "__main__":
     HOST = "127.0.0.1"
+    PORT = 2121
     
-    client = SimpleFTPClient(HOST)
+    client = SimpleFTPClient(HOST, port=PORT)
 
     client.connect()
     
